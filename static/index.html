@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Genre Classification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        form {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label.upload-label {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        label.upload-label:hover {
+            background-color: #45a049;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .dialog-box {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .dialog-box.hidden {
+            display: none;
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #4caf50;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        #genreResult {
+    font-size: 18px;
+    text-align: center;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#uploadForm").submit(function(e) {
+                e.preventDefault();
+
+                var formData = new FormData(this);
+
+                // Show the loading indicator
+                $(".loader").show();
+                $(".dialog-box").addClass("hidden");
+
+                $.ajax({
+                    url: "/predict_genre",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        // Hide the loading indicator
+                        $(".loader").hide();
+                        var uploadedFileName = $("#audioInput").val().split("\\").pop();
+    
+                        // Display the uploaded file name and predicted genre
+                        $("#fileName").text("Uploaded File: " + uploadedFileName);
+                        // Show the genre result
+                        $("#genreResult").text(response.text);
+                        $("#genreDialog").removeClass("hidden");
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    },
+                    complete: function() {
+                        // Hide the loading indicator
+                        $(".loader").hide();
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Audio Genre Classification</h1>
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
+
+            <label class="upload-label" for="audioInput">Choose Audio File</label>
+
+            <input type="file" id="audioInput" name="audio" accept=".wav, .mp3" required>
+
+            <br>
+            <br>
+            <button type="submit">Upload</button>
+        </form>
+
+        <div id="genreDialog" class="dialog-box hidden">
+            <h2>Genre Result:</h2>
+            <p id="genreResult"></p>
+        </div>
+
+        <div class="loader"></div>
+    </div>
+</body>
+</html>
